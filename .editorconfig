@@ -1,0 +1,6 @@
+root = true
+
+# general
+[*]
+indent_style = tab
+indent_width = 4
