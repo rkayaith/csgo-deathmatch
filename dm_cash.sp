@@ -12,7 +12,7 @@ ConVar g_cashKillEnemy;
 ConVar g_cashKillEnemyFactor;
 ConVar g_cashKillTeammate;
 ConVar g_cashGetKilled;
-ConVar g_cashRespawn
+ConVar g_cashRespawn;
 
 
 public Plugin myinfo = {
@@ -40,12 +40,7 @@ public void OnPluginStart() {
 	g_cashGetKilled 		= FindConVar("cash_player_get_killed");
 	g_cashRespawn 			= FindConVar("cash_player_respawn_amount");
 
-	// FindConVar("cash_player_bomb_defused");
-	// FindConVar("cash_player_bomb_planted");
-	// FindConVar("cash_player_damage_hostage");
-	// FindConVar("cash_player_interact_with_hostage");
-	// FindConVar("cash_player_killed_hostage");
-	// FindConVar("cash_player_rescued_hostage");
+
 
 	if (g_cashAwardsEnabled.IntValue != 0) {
 		g_cashAwardsEnabled.SetInt(0);
