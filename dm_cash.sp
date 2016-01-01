@@ -19,7 +19,7 @@ public Plugin myinfo = {
 	name = "Deathmatch: Cash",
 	author = "trog_",
 	description = "Implements some of the cash_player_* commands without all the printing to chat",
-	version = "0.1.1",
+	version = "1.0",
 	url = ""
 };
 
@@ -66,6 +66,7 @@ public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) {
 
 	GiveClientCash(victim, g_cashGetKilled.IntValue);
 
+	// All guns will give the same amount of money
 	if (ClientsAreEnemies(attacker, victim)) {
 		GiveClientCash(attacker, RoundToFloor(g_cashKillEnemy.IntValue * g_cashKillEnemyFactor.FloatValue));
 	} else if (attacker != victim) {
@@ -85,6 +86,7 @@ public void OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
 void GiveClientCash(int client, int amount) {
 	int cash = GetClientCash(client);
 	cash = (cash += amount) < g_cashLimit.IntValue ? cash : g_cashLimit.IntValue;
+	cash = cash > 0 ? cash : 0;
 
 	SetClientCash(client, cash);
 }
