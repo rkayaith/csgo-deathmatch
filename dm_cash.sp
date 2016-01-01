@@ -19,7 +19,7 @@ public Plugin myinfo = {
 	name = "Deathmatch: Cash",
 	author = "trog_",
 	description = "Implements some of the cash_player_* commands without all the printing to chat",
-	version = "0.1",
+	version = "0.1.1",
 	url = ""
 };
 
@@ -40,8 +40,7 @@ public void OnPluginStart() {
 	g_cashGetKilled 		= FindConVar("cash_player_get_killed");
 	g_cashRespawn 			= FindConVar("cash_player_respawn_amount");
 
-
-
+	// Set mp_playercashawards to 0 so the game isn't also trying to give money for the same actions
 	if (g_cashAwardsEnabled.IntValue != 0) {
 		g_cashAwardsEnabled.SetInt(0);
 
@@ -54,14 +53,14 @@ public void OnPluginStart() {
 }
 
 public void OnCashEnabledChange(ConVar convar, const char[] oldValue, const char[] newValue) {
+	// Notify if mp_playercashawards is changed
 	if (StringToInt(newValue) != 0) {
 		PrintToChatAll("[SM] mp_playercashawards should be 0 for the dm_cash plugin to work properly.");
 	}
 }
 
-
-
 public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) {
+
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	int victim = GetClientOfUserId(event.GetInt("userid"));
 
@@ -78,6 +77,26 @@ public void OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
 	GiveClientCash(GetClientOfUserId(event.GetInt("userid")), g_cashRespawn.IntValue)
 }
 
+/**
+ * Gives a player money without going over the mp_maxmoney limit.
+ * @param client 	Client index.
+ * @param amount 	Amount of money to give.
+ */
+void GiveClientCash(int client, int amount) {
+	int cash = GetClientCash(client);
+	cash = (cash += amount) < g_cashLimit.IntValue ? cash : g_cashLimit.IntValue;
+
+	SetClientCash(client, cash);
+}
+
+/**
+ * Checks whether two clients are enemies.
+ * Takes into account the value of mp_teammates_are_enemies.
+ *
+ * @param client1 	First client index.
+ * @param client2 	Second client index.
+ * @return 			Whether the clients are enemies.
+ */
 bool ClientsAreEnemies(int client1, int client2) {
 	if (client1 == client2) {
 		return false;
@@ -90,19 +109,12 @@ bool ClientsAreEnemies(int client1, int client2) {
 	return GetClientTeam(client1) != GetClientTeam(client2);
 }
 
-void GiveClientCash(int client, int amount) {
-	int cash = min(GetClientCash(client) + amount, g_cashLimit.IntValue);
-	SetClientCash(client, cash);
-}
-
-
+/**
+ * Getter and setter for entity cash properties
+ */
 int GetClientCash(int client) {
 	return GetEntProp(client, Prop_Send, "m_iAccount");
 }
 void SetClientCash(int client, int amount) {
 	SetEntProp(client, Prop_Send, "m_iAccount", amount);
-}
-
-int min(int a, int b) {
-	return (a < b) ? a : b;
 }
