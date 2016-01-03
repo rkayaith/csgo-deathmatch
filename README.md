@@ -1,22 +1,23 @@
-# csgo-deathmatch 
+# csgo-deathmatch
 
 Some SourceMod plugins for making a custom deathmatch mode in CS:GO.  
-The plugins are completely independent and can be used seperately.
+The plugins are completely independent and can be used separately.
 
 **Any plugins with version < 1.0 are very WIP!!**
 
-##How to use:
-Install SourceMod then take any of the compiled plugins from /compiled/ and put it in your server's /sourcemod/plugins/ folder.
+## How to use:
+Install SourceMod then take any of the compiled plugins from `/compiled/` and put it in your server's `/sourcemod/plugins/` folder.  
+Use `dm_enabled [0/1]` to turn on/off all of the plugins.
 
-##Plugins:
+## Plugins:
 
-**dm_healthammo:**  
-Gives health / ammo on kill. The amount given is a factor of the player's max health / weapon's max clip size. Both primary and secondary weapons are given ammo on kill.
+### dm_healthammo:
+Gives health / ammo on kill. The amount given is a factor of the player's max health / weapon's max clip size (so `dm_ammo_kill 0.5` will give 15 bullets for an ak47 but only 5 for an AWP). Both primary and secondary weapons are given ammo on kill.
 
 Commands:  
 `dm_health_kill` `dm_health_kill_headshot` `dm_ammo_kill` `dm_ammo_kill_headshot`
 
-**dm_cash:**  
+### dm_cash:
 Implements some of the `cash_player_*` commands without all the annoying chat printing. `mp_playercashawards 0` is set when the plugin first starts to avoid conflicts with the default behaviour of the commands.
 
 Implemented Commands:  
