@@ -3,6 +3,8 @@
 #include <cstrike>
 
 EngineVersion g_Game;
+ConVar g_Enabled;
+
 ConVar g_healthFactor;
 ConVar g_healthFactorHeadshot;
 ConVar g_ammoFactor;
@@ -14,12 +16,12 @@ public Plugin myinfo = {
 	name = "Deathmatch: Health/Ammo",
 	author = "trog_",
 	description = "Give health / ammo on kill as a factor of max values",
-	version = "1.0",
+	version = "1.1",
 	url = ""
 };
 
-public void OnPluginStart() 
-{
+public void OnPluginStart() {
+
 	g_Game = GetEngineVersion();
 	if (g_Game != Engine_CSGO) {
 		SetFailState("This plugin is for CS:GO only. It may need tweaking for other games");
@@ -29,10 +31,31 @@ public void OnPluginStart()
 	g_healthFactorHeadshot 	= CreateConVar("dm_health_kill_headshot", "1", "Health to give on headshot kill (as a factor of max health)", FCVAR_NOTIFY, true, 0.0);
 	g_ammoFactor 			= CreateConVar("dm_ammo_kill", "0.5", "Ammo to give on kill (as a factor of max clip size)", FCVAR_NOTIFY, true, 0.0);
 	g_ammoFactorHeadshot 	= CreateConVar("dm_ammo_kill_headshot", "1", "Ammo to give on headshot kill (as a factor of max clip size)", FCVAR_NOTIFY, true, 0.0);
-	
+
 	g_maxClipTable = new StringMap();
-	
+
+	g_Enabled = CreateConVar("dm_enabled", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_Enabled.AddChangeHook(OnEnabledChanged);
+	if (g_Enabled.BoolValue) {
+		HookEvents();
+	}
+}
+
+public void OnEnabledChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
+	if (StringToInt(newValue) != StringToInt(oldValue)) {
+		if (g_Enabled.BoolValue) {
+			HookEvents();
+		}
+		else {
+			UnhookEvents();
+		}
+	}
+}
+void HookEvents() {
 	HookEvent("player_death", OnPlayerDeath);
+}
+void UnhookEvents() {
+	UnhookEvent("player_death", OnPlayerDeath);
 }
 
 public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) {
@@ -71,7 +94,7 @@ public Action OnPlayerDeathDelayed(Handle timer, DataPack eventData) {
 
 /**
  * Gives a player health as a factor of their max health. Won't exceed max health.
- * 
+ *
  * @param client 		Client index.
  * @param factor 		Factor of max health to give.
  * @return 				How much health was given (including excess).
@@ -90,7 +113,7 @@ int GivePlayerHealth(int client, float factor) {
 /**
  * Finds the max health of a player and caches result.
  * Assumes all players have the same max health.
- * 
+ *
  * @param client 		Client index.
  * @return 				Client max health.
  */
@@ -113,7 +136,7 @@ int GetClientMaxHealth(int client) {
  */
 int GiveWeaponAmmo(int client, int weapon, float factor) {
 
-	if (weapon == -1) { 
+	if (weapon == -1) {
 		return 0;
 	}
 
@@ -155,11 +178,11 @@ int GetWeaponMaxClip(int client, int &weapon) {
 
 		// Switch back to active weapon (plays weapon switch animation. meh...)
 		SetClientActiveWeapon(client, activeWeapon > -1 ? activeWeapon : weapon);
-		
+
 		maxClip = GetWeaponClip(weapon);
 		g_maxClipTable.SetValue(weaponClassname, maxClip);
 
-		PrintToChatAll("[SM] Cached default clip value for: %s (%i)", weaponClassname, maxClip);	
+		PrintToChatAll("[SM] Cached default clip value for: %s (%i)", weaponClassname, maxClip);
 	}
 
 	return maxClip;
@@ -186,7 +209,7 @@ int GetWeaponClip(int weapon) {
 	return GetEntProp(weapon, Prop_Send, "m_iClip1");
 }
 void SetWeaponClip(int weapon, int value) {
-	SetEntProp(weapon, Prop_Send, "m_iClip1", value);	
+	SetEntProp(weapon, Prop_Send, "m_iClip1", value);
 }
 
 // Client active weapon

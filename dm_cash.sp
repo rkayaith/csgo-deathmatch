@@ -3,6 +3,7 @@
 #include <cstrike>
 
 EngineVersion g_Game;
+ConVar g_Enabled;
 
 ConVar g_cashAwardsEnabled;
 ConVar g_teammatesAreEnemies;
@@ -19,7 +20,7 @@ public Plugin myinfo = {
 	name = "Deathmatch: Cash",
 	author = "trog_",
 	description = "Implements some of the cash_player_* commands without all the printing to chat",
-	version = "1.0",
+	version = "1.1",
 	url = ""
 };
 
@@ -48,8 +49,31 @@ public void OnPluginStart() {
 	}
 	g_cashAwardsEnabled.AddChangeHook(OnCashEnabledChange);
 
+	g_Enabled = CreateConVar("dm_enabled", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_Enabled.AddChangeHook(OnEnabledChanged);
+	if (g_Enabled.BoolValue) {
+		HookEvents();
+	}
+}
+
+public void OnEnabledChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
+	if (StringToInt(newValue) != StringToInt(oldValue)) {
+		if (g_Enabled.BoolValue) {
+			HookEvents();
+		}
+		else {
+			UnhookEvents();
+		}
+	}
+}
+
+void HookEvents() {
 	HookEvent("player_death", OnPlayerDeath);
 	HookEvent("player_spawn", OnPlayerSpawn);
+}
+void UnhookEvents() {
+	UnhookEvent("player_death", OnPlayerDeath);
+	UnhookEvent("player_spawn", OnPlayerSpawn);
 }
 
 public void OnCashEnabledChange(ConVar convar, const char[] oldValue, const char[] newValue) {
