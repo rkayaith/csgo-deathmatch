@@ -2,6 +2,8 @@
 #include <sdktools>
 #include <cstrike>
 
+#pragma semicolon 1
+
 EngineVersion g_Game;
 ConVar g_Cvar_Enabled;
 

@@ -2,6 +2,8 @@
 #include <sdktools>
 #include <cstrike>
 
+#pragma semicolon 1
+
 EngineVersion g_Game;
 ConVar g_Cvar_Enabled;
 
@@ -95,12 +97,12 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 	if (ClientsAreEnemies(attacker, victim)) {
 		GiveClientCash(attacker, RoundToFloor(g_Cvar_CashKillEnemy.IntValue * g_Cvar_CashKillEnemyFactor.FloatValue));
 	} else if (attacker != victim) {
-		GiveClientCash(attacker, g_Cvar_CashKillTeammate.IntValue)
+		GiveClientCash(attacker, g_Cvar_CashKillTeammate.IntValue);
 	}
 }
 
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
-	GiveClientCash(GetClientOfUserId(event.GetInt("userid")), g_Cvar_CashRespawn.IntValue)
+	GiveClientCash(GetClientOfUserId(event.GetInt("userid")), g_Cvar_CashRespawn.IntValue);
 }
 
 /**

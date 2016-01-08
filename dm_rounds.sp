@@ -2,6 +2,8 @@
 #include <sdktools>
 #include <cstrike>
 
+#pragma semicolon 1
+
 EngineVersion g_Game;
 ConVar g_Enabled;
 
@@ -101,10 +103,10 @@ bool ClientsAreEnemies(int client1, int client2) {
 
 void UpdateTeamScores() {
 	// Have to do both to display the score properly
-	CS_SetTeamScore(CS_TEAM_T, g_TeamScores[CS_TEAM_T])
+	CS_SetTeamScore(CS_TEAM_T, g_TeamScores[CS_TEAM_T]);
 	SetTeamScore(CS_TEAM_T, g_TeamScores[CS_TEAM_T]);
 
-	CS_SetTeamScore(CS_TEAM_CT, g_TeamScores[CS_TEAM_CT])
+	CS_SetTeamScore(CS_TEAM_CT, g_TeamScores[CS_TEAM_CT]);
 	SetTeamScore(CS_TEAM_CT, g_TeamScores[CS_TEAM_CT]);
 
 	for (int i = 0; i < sizeof(g_TeamScores); i++) {
