@@ -5,7 +5,7 @@
 EngineVersion g_Game;
 ConVar g_Enabled;
 
-ConVar g_scorelimit;
+ConVar g_fraglimit;
 
 ConVar g_maxrounds;
 ConVar g_teammatesAreEnemies;
@@ -28,8 +28,8 @@ public void OnPluginStart() {
 		SetFailState("This plugin is for CS:GO only. It may need tweaking for other games");
 	}
 
-	g_scorelimit = CreateConVar("dm_rounds_scorelimit", "0", "Score a team has to get to win", FCVAR_NOTIFY);
-	g_scorelimit.AddChangeHook(OnScorelimitChanged);
+	g_fraglimit = CreateConVar("dm_rounds_fraglimit", "0", "Score a team has to get to win", FCVAR_NOTIFY);
+	g_fraglimit.AddChangeHook(OnScorelimitChanged);
 	g_maxrounds = FindConVar("mp_maxrounds");
 	g_teammatesAreEnemies = FindConVar("mp_teammates_are_enemies");
 	g_winPanelDisplayTime = FindConVar("mp_win_panel_display_time");
@@ -63,8 +63,8 @@ void UnhookEvents() {
 
 public void OnScorelimitChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
 	// Make sure mp_maxrounds doesn't end the game early
-	if (g_scorelimit.IntValue * 2 < g_maxrounds.IntValue) {
-		g_maxrounds.SetInt(g_scorelimit.IntValue * 2);
+	if (g_fraglimit.IntValue * 2 < g_maxrounds.IntValue) {
+		g_maxrounds.SetInt(g_fraglimit.IntValue * 2);
 	}
 }
 
@@ -109,7 +109,7 @@ void UpdateTeamScores() {
 	SetTeamScore(CS_TEAM_CT, g_teamScores[CS_TEAM_CT]);
 
 	for (int i = 0; i < sizeof(g_teamScores); i++) {
-		if (g_teamScores[i] >= g_scorelimit.IntValue && g_scorelimit.IntValue > 0) {
+		if (g_teamScores[i] >= g_fraglimit.IntValue && g_fraglimit.IntValue > 0) {
 			SetRoundWinner(i);
 			break;
 		}
