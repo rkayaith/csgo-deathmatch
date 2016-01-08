@@ -5,13 +5,12 @@
 EngineVersion g_Game;
 ConVar g_Enabled;
 
-ConVar g_fraglimit;
+ConVar g_Cvar_Fraglimit;
+ConVar g_Cvar_Maxrounds;
+ConVar g_Cvar_TeammatesAreEnemies;
+ConVar g_Cvar_WinPanelDisplayTime;
 
-ConVar g_maxrounds;
-ConVar g_teammatesAreEnemies;
-ConVar g_winPanelDisplayTime;
-
-int g_teamScores[4]; // CS has 4 teams
+int g_TeamScores[4]; // CS has 4 teams
 
 public Plugin myinfo = {
 	name = "Deathmatch: Rounds",
@@ -28,20 +27,30 @@ public void OnPluginStart() {
 		SetFailState("This plugin is for CS:GO only. It may need tweaking for other games");
 	}
 
-	g_fraglimit = CreateConVar("dm_rounds_fraglimit", "0", "Score a team has to get to win", FCVAR_NOTIFY);
-	g_fraglimit.AddChangeHook(OnFraglimitChanged);
-	g_maxrounds = FindConVar("mp_maxrounds");
-	g_teammatesAreEnemies = FindConVar("mp_teammates_are_enemies");
-	g_winPanelDisplayTime = FindConVar("mp_win_panel_display_time");
+	g_Enabled 					= CreateConVar("dm_enabled", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_Cvar_Fraglimit 			= CreateConVar("dm_rounds_fraglimit", "0", "Score a team has to get to win", FCVAR_NOTIFY);
+	g_Cvar_Maxrounds 			= FindConVar("mp_maxrounds");
+	g_Cvar_TeammatesAreEnemies 	= FindConVar("mp_teammates_are_enemies");
+	g_Cvar_WinPanelDisplayTime 	= FindConVar("mp_win_panel_display_time");
 
-	g_Enabled = CreateConVar("dm_enabled", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_Enabled.AddChangeHook(OnEnabledChanged);
+	g_Enabled.AddChangeHook(ConVarChange_Enabled);
+	g_Cvar_Fraglimit.AddChangeHook(ConVarChange_Fraglimit);
+
 	if (g_Enabled.BoolValue) {
 		HookEvents();
 	}
 }
 
-public void OnEnabledChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
+void HookEvents() {
+	HookEvent("player_death", Event_PlayerDeath);
+	HookEvent("round_start", Event_RoundStart);
+}
+void UnhookEvents() {
+	UnhookEvent("player_death", Event_PlayerDeath);
+	UnhookEvent("round_start", Event_RoundStart);
+}
+
+public void ConVarChange_Enabled(ConVar convar, const char[] oldValue, const char[] newValue) {
 	if (StringToInt(newValue) != StringToInt(oldValue)) {
 		if (g_Enabled.BoolValue) {
 			HookEvents();
@@ -51,39 +60,29 @@ public void OnEnabledChanged(ConVar convar, const char[] oldValue, const char[] 
 		}
 	}
 }
-
-void HookEvents() {
-	HookEvent("player_death", OnPlayerDeath);
-	HookEvent("round_start", OnRoundStart);
-}
-void UnhookEvents() {
-	UnhookEvent("player_death", OnPlayerDeath);
-	UnhookEvent("round_start", OnRoundStart);
-}
-
-public void OnFraglimitChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
+public void ConVarChange_Fraglimit(ConVar convar, const char[] oldValue, const char[] newValue) {
 	// Make sure mp_maxrounds doesn't end the game early
-	if (g_fraglimit.IntValue * 2 < g_maxrounds.IntValue) {
-		g_maxrounds.SetInt(g_fraglimit.IntValue * 2);
+	if (g_Cvar_Fraglimit.IntValue * 2 < g_Cvar_Maxrounds.IntValue) {
+		g_Cvar_Maxrounds.SetInt(g_Cvar_Fraglimit.IntValue * 2);
 	}
 }
 
-public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) {
+public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast) {
 	// Increment team score if attacker was on a playing team (not spectator or something)
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	int victim = GetClientOfUserId(event.GetInt("userid"));
 	int team = GetClientTeam(attacker);
 	if ( (team == CS_TEAM_T || team == CS_TEAM_CT) && ClientsAreEnemies(attacker, victim)) {
-		g_teamScores[team]++;
+		g_TeamScores[team]++;
 	}
 
 	UpdateTeamScores();
 }
 
-public void OnRoundStart(Event event, const char[] name, bool dontBroadcast) {
+public void Event_RoundStart(Event event, const char[] name, bool dontBroadcast) {
 	// Reset all team scores to 0
-	for (int i = 0; i < sizeof(g_teamScores); i++) {
-		g_teamScores[i] = 0;
+	for (int i = 0; i < sizeof(g_TeamScores); i++) {
+		g_TeamScores[i] = 0;
 	}
 	UpdateTeamScores();
 }
@@ -93,7 +92,7 @@ bool ClientsAreEnemies(int client1, int client2) {
 		return false;
 	}
 
-	if (g_teammatesAreEnemies.IntValue > 0) {
+	if (g_Cvar_TeammatesAreEnemies.IntValue > 0) {
 		return true;
 	}
 
@@ -102,14 +101,14 @@ bool ClientsAreEnemies(int client1, int client2) {
 
 void UpdateTeamScores() {
 	// Have to do both to display the score properly
-	CS_SetTeamScore(CS_TEAM_T, g_teamScores[CS_TEAM_T])
-	SetTeamScore(CS_TEAM_T, g_teamScores[CS_TEAM_T]);
+	CS_SetTeamScore(CS_TEAM_T, g_TeamScores[CS_TEAM_T])
+	SetTeamScore(CS_TEAM_T, g_TeamScores[CS_TEAM_T]);
 
-	CS_SetTeamScore(CS_TEAM_CT, g_teamScores[CS_TEAM_CT])
-	SetTeamScore(CS_TEAM_CT, g_teamScores[CS_TEAM_CT]);
+	CS_SetTeamScore(CS_TEAM_CT, g_TeamScores[CS_TEAM_CT])
+	SetTeamScore(CS_TEAM_CT, g_TeamScores[CS_TEAM_CT]);
 
-	for (int i = 0; i < sizeof(g_teamScores); i++) {
-		if (g_teamScores[i] >= g_fraglimit.IntValue && g_fraglimit.IntValue > 0) {
+	for (int i = 0; i < sizeof(g_TeamScores); i++) {
+		if (g_TeamScores[i] >= g_Cvar_Fraglimit.IntValue && g_Cvar_Fraglimit.IntValue > 0) {
 			SetRoundWinner(i);
 			break;
 		}
@@ -128,5 +127,5 @@ void SetRoundWinner(int team) {
 		reason = CSRoundEnd_CTWin;
 	}
 
-	CS_TerminateRound(g_winPanelDisplayTime.FloatValue, reason);
+	CS_TerminateRound(g_Cvar_WinPanelDisplayTime.FloatValue, reason);
 }

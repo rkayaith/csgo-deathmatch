@@ -3,14 +3,14 @@
 #include <cstrike>
 
 EngineVersion g_Game;
-ConVar g_Enabled;
+ConVar g_Cvar_Enabled;
 
-ConVar g_healthFactor;
-ConVar g_healthFactorHeadshot;
-ConVar g_ammoFactor;
-ConVar g_ammoFactorHeadshot;
+ConVar g_Cvar_HealthFactor;
+ConVar g_Cvar_HealthFactorHeadshot;
+ConVar g_Cvar_AmmoFactor;
+ConVar g_Cvar_AmmoFactorHeadshot;
 
-StringMap g_maxClipTable;
+StringMap g_MaxClipTable;
 
 public Plugin myinfo = {
 	name = "Deathmatch: Health/Ammo",
@@ -27,23 +27,31 @@ public void OnPluginStart() {
 		SetFailState("This plugin is for CS:GO only. It may need tweaking for other games");
 	}
 
-	g_healthFactor 			= CreateConVar("dm_health_kill", "0.5", "Health to give on kill (as a factor of max health)", FCVAR_NOTIFY, true, 0.0);
-	g_healthFactorHeadshot 	= CreateConVar("dm_health_kill_headshot", "1", "Health to give on headshot kill (as a factor of max health)", FCVAR_NOTIFY, true, 0.0);
-	g_ammoFactor 			= CreateConVar("dm_ammo_kill", "0.5", "Ammo to give on kill (as a factor of max clip size)", FCVAR_NOTIFY, true, 0.0);
-	g_ammoFactorHeadshot 	= CreateConVar("dm_ammo_kill_headshot", "1", "Ammo to give on headshot kill (as a factor of max clip size)", FCVAR_NOTIFY, true, 0.0);
+	g_Cvar_Enabled 					= CreateConVar("dm_enabled", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_Cvar_HealthFactor 			= CreateConVar("dm_health_kill", "0.5", "Health to give on kill (as a factor of max health)", FCVAR_NOTIFY, true, 0.0);
+	g_Cvar_HealthFactorHeadshot		= CreateConVar("dm_health_kill_headshot", "1", "Health to give on headshot kill (as a factor of max health)", FCVAR_NOTIFY, true, 0.0);
+	g_Cvar_AmmoFactor 				= CreateConVar("dm_ammo_kill", "0.5", "Ammo to give on kill (as a factor of max clip size)", FCVAR_NOTIFY, true, 0.0);
+	g_Cvar_AmmoFactorHeadshot 		= CreateConVar("dm_ammo_kill_headshot", "1", "Ammo to give on headshot kill (as a factor of max clip size)", FCVAR_NOTIFY, true, 0.0);
 
-	g_maxClipTable = new StringMap();
+	g_MaxClipTable = new StringMap();
 
-	g_Enabled = CreateConVar("dm_enabled", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_Enabled.AddChangeHook(OnEnabledChanged);
-	if (g_Enabled.BoolValue) {
+	g_Cvar_Enabled.AddChangeHook(ConVarChange_Enabled);
+
+	if (g_Cvar_Enabled.BoolValue) {
 		HookEvents();
 	}
 }
 
-public void OnEnabledChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
+void HookEvents() {
+	HookEvent("player_death", Event_PlayerDeath);
+}
+void UnhookEvents() {
+	UnhookEvent("player_death", Event_PlayerDeath);
+}
+
+public void ConVarChange_Enabled(ConVar convar, const char[] oldValue, const char[] newValue) {
 	if (StringToInt(newValue) != StringToInt(oldValue)) {
-		if (g_Enabled.BoolValue) {
+		if (g_Cvar_Enabled.BoolValue) {
 			HookEvents();
 		}
 		else {
@@ -51,19 +59,13 @@ public void OnEnabledChanged(ConVar convar, const char[] oldValue, const char[] 
 		}
 	}
 }
-void HookEvents() {
-	HookEvent("player_death", OnPlayerDeath);
-}
-void UnhookEvents() {
-	UnhookEvent("player_death", OnPlayerDeath);
-}
 
-public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) {
+public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast) {
 
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	bool isHeadshot = event.GetBool("headshot");
 	// Give health immediately
-	int healthGiven = GivePlayerHealth(attacker, isHeadshot ? g_healthFactorHeadshot.FloatValue : g_healthFactor.FloatValue);
+	int healthGiven = GivePlayerHealth(attacker, isHeadshot ? g_Cvar_HealthFactorHeadshot.FloatValue : g_Cvar_HealthFactor.FloatValue);
 
 	// Pack up event data and handle the rest after a small delay
 	DataPack eventData;
@@ -83,11 +85,11 @@ public Action OnPlayerDeathDelayed(Handle timer, DataPack eventData) {
 	// We want to delay giving ammo so that clip values have a chance to update after the kill
 	int pAmmoGiven = GiveWeaponAmmo(attacker,
 									GetPlayerWeaponSlot(attacker, CS_SLOT_PRIMARY),
-									isHeadshot ? g_ammoFactorHeadshot.FloatValue : g_ammoFactor.FloatValue);
+									isHeadshot ? g_Cvar_AmmoFactorHeadshot.FloatValue : g_Cvar_AmmoFactor.FloatValue);
 
 	int sAmmoGiven = GiveWeaponAmmo(attacker,
 									GetPlayerWeaponSlot(attacker, CS_SLOT_SECONDARY),
-									isHeadshot ? g_ammoFactorHeadshot.FloatValue : g_ammoFactor.FloatValue);
+									isHeadshot ? g_Cvar_AmmoFactorHeadshot.FloatValue : g_Cvar_AmmoFactor.FloatValue);
 
 	PrintToChat(attacker, "[\x06+%3i \x01HP]  [\x06+%2i\x01 / \x06+%2i\x01 ammo] for kill %s", healthGiven, pAmmoGiven, sAmmoGiven, isHeadshot ? "(headshot)" : "");
 }
@@ -165,7 +167,7 @@ int GetWeaponMaxClip(int client, int &weapon) {
 	GetEntityClassname(weapon, weaponClassname, sizeof(weaponClassname));
 
 	int maxClip;
-	if (!g_maxClipTable.GetValue(weaponClassname, maxClip)) {
+	if (!g_MaxClipTable.GetValue(weaponClassname, maxClip)) {
 		// We didn't have a value cached
 		// We'll find it by giving the player a new weapon entity and checking its clip size
 
@@ -180,7 +182,7 @@ int GetWeaponMaxClip(int client, int &weapon) {
 		SetClientActiveWeapon(client, activeWeapon > -1 ? activeWeapon : weapon);
 
 		maxClip = GetWeaponClip(weapon);
-		g_maxClipTable.SetValue(weaponClassname, maxClip);
+		g_MaxClipTable.SetValue(weaponClassname, maxClip);
 
 		PrintToChatAll("[SM] Cached default clip value for: %s (%i)", weaponClassname, maxClip);
 	}

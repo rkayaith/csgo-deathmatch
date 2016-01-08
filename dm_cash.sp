@@ -3,17 +3,17 @@
 #include <cstrike>
 
 EngineVersion g_Game;
-ConVar g_Enabled;
+ConVar g_Cvar_Enabled;
 
-ConVar g_cashAwardsEnabled;
-ConVar g_teammatesAreEnemies;
-ConVar g_cashLimit;
+ConVar g_Cvar_CashAwardsEnabled;
+ConVar g_Cvar_TeammatesAreEnemies;
+ConVar g_Cvar_Maxmoney;
 
-ConVar g_cashKillEnemy;
-ConVar g_cashKillEnemyFactor;
-ConVar g_cashKillTeammate;
-ConVar g_cashGetKilled;
-ConVar g_cashRespawn;
+ConVar g_Cvar_CashKillEnemy;
+ConVar g_Cvar_CashKillEnemyFactor;
+ConVar g_Cvar_CashKillTeammate;
+ConVar g_Cvar_CashGetKilled;
+ConVar g_Cvar_CashRespawn;
 
 
 public Plugin myinfo = {
@@ -31,34 +31,44 @@ public void OnPluginStart() {
 		SetFailState("This plugin is for CS:GO only. It may need tweaking for other games");
 	}
 
-	g_cashAwardsEnabled		= FindConVar("mp_playercashawards");
-	g_teammatesAreEnemies 	= FindConVar("mp_teammates_are_enemies");
-	g_cashLimit 			= FindConVar("mp_maxmoney");
+	g_Cvar_Enabled 				= CreateConVar("dm_enabled", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_Cvar_CashAwardsEnabled	= FindConVar("mp_playercashawards");
+	g_Cvar_TeammatesAreEnemies 	= FindConVar("mp_teammates_are_enemies");
+	g_Cvar_Maxmoney 			= FindConVar("mp_maxmoney");
 
-	g_cashKillEnemy 		= FindConVar("cash_player_killed_enemy_default");
-	g_cashKillEnemyFactor 	= FindConVar("cash_player_killed_enemy_factor");
-	g_cashKillTeammate 		= FindConVar("cash_player_killed_teammate");
-	g_cashGetKilled 		= FindConVar("cash_player_get_killed");
-	g_cashRespawn 			= FindConVar("cash_player_respawn_amount");
+	g_Cvar_CashKillEnemy 		= FindConVar("cash_player_killed_enemy_default");
+	g_Cvar_CashKillEnemyFactor 	= FindConVar("cash_player_killed_enemy_factor");
+	g_Cvar_CashKillTeammate 	= FindConVar("cash_player_killed_teammate");
+	g_Cvar_CashGetKilled 		= FindConVar("cash_player_get_killed");
+	g_Cvar_CashRespawn 			= FindConVar("cash_player_respawn_amount");
+
+	g_Cvar_Enabled.AddChangeHook(ConVarChange_Enabled);
+	g_Cvar_CashAwardsEnabled.AddChangeHook(ConVarChange_CashAwards);
 
 	// Set mp_playercashawards to 0 so the game isn't also trying to give money for the same actions
-	if (g_cashAwardsEnabled.IntValue != 0) {
-		g_cashAwardsEnabled.SetInt(0);
+	if (g_Cvar_CashAwardsEnabled.IntValue != 0) {
+		g_Cvar_CashAwardsEnabled.SetInt(0);
 
 		PrintToChatAll("[SM] mp_playercashawards forced to 0 by dm_cash plugin.");
 	}
-	g_cashAwardsEnabled.AddChangeHook(OnCashEnabledChange);
 
-	g_Enabled = CreateConVar("dm_enabled", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_Enabled.AddChangeHook(OnEnabledChanged);
-	if (g_Enabled.BoolValue) {
+	if (g_Cvar_Enabled.BoolValue) {
 		HookEvents();
 	}
 }
 
-public void OnEnabledChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
+void HookEvents() {
+	HookEvent("player_death", Event_PlayerDeath);
+	HookEvent("player_spawn", Event_PlayerSpawn);
+}
+void UnhookEvents() {
+	UnhookEvent("player_death", Event_PlayerDeath);
+	UnhookEvent("player_spawn", Event_PlayerSpawn);
+}
+
+public void ConVarChange_Enabled(ConVar convar, const char[] oldValue, const char[] newValue) {
 	if (StringToInt(newValue) != StringToInt(oldValue)) {
-		if (g_Enabled.BoolValue) {
+		if (g_Cvar_Enabled.BoolValue) {
 			HookEvents();
 		}
 		else {
@@ -67,39 +77,30 @@ public void OnEnabledChanged(ConVar convar, const char[] oldValue, const char[] 
 	}
 }
 
-void HookEvents() {
-	HookEvent("player_death", OnPlayerDeath);
-	HookEvent("player_spawn", OnPlayerSpawn);
-}
-void UnhookEvents() {
-	UnhookEvent("player_death", OnPlayerDeath);
-	UnhookEvent("player_spawn", OnPlayerSpawn);
-}
-
-public void OnCashEnabledChange(ConVar convar, const char[] oldValue, const char[] newValue) {
+public void ConVarChange_CashAwards(ConVar convar, const char[] oldValue, const char[] newValue) {
 	// Notify if mp_playercashawards is changed
 	if (StringToInt(newValue) != 0) {
 		PrintToChatAll("[SM] mp_playercashawards should be 0 for the dm_cash plugin to work properly.");
 	}
 }
 
-public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) {
+public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast) {
 
 	int attacker = GetClientOfUserId(event.GetInt("attacker"));
 	int victim = GetClientOfUserId(event.GetInt("userid"));
 
-	GiveClientCash(victim, g_cashGetKilled.IntValue);
+	GiveClientCash(victim, g_Cvar_CashGetKilled.IntValue);
 
 	// All guns will give the same amount of money
 	if (ClientsAreEnemies(attacker, victim)) {
-		GiveClientCash(attacker, RoundToFloor(g_cashKillEnemy.IntValue * g_cashKillEnemyFactor.FloatValue));
+		GiveClientCash(attacker, RoundToFloor(g_Cvar_CashKillEnemy.IntValue * g_Cvar_CashKillEnemyFactor.FloatValue));
 	} else if (attacker != victim) {
-		GiveClientCash(attacker, g_cashKillTeammate.IntValue)
+		GiveClientCash(attacker, g_Cvar_CashKillTeammate.IntValue)
 	}
 }
 
-public void OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
-	GiveClientCash(GetClientOfUserId(event.GetInt("userid")), g_cashRespawn.IntValue)
+public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
+	GiveClientCash(GetClientOfUserId(event.GetInt("userid")), g_Cvar_CashRespawn.IntValue)
 }
 
 /**
@@ -109,7 +110,7 @@ public void OnPlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
  */
 void GiveClientCash(int client, int amount) {
 	int cash = GetClientCash(client);
-	cash = (cash += amount) < g_cashLimit.IntValue ? cash : g_cashLimit.IntValue;
+	cash = (cash += amount) < g_Cvar_Maxmoney.IntValue ? cash : g_Cvar_Maxmoney.IntValue;
 	cash = cash > 0 ? cash : 0;
 
 	SetClientCash(client, cash);
@@ -128,7 +129,7 @@ bool ClientsAreEnemies(int client1, int client2) {
 		return false;
 	}
 
-	if (g_teammatesAreEnemies.IntValue > 0) {
+	if (g_Cvar_TeammatesAreEnemies.IntValue > 0) {
 		return true;
 	}
 
