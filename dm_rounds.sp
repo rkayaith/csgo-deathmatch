@@ -14,10 +14,10 @@ ConVar g_winPanelDisplayTime;
 int g_teamScores[4]; // CS has 4 teams
 
 public Plugin myinfo = {
-	name = "Deathmatch: control stuff about rounds",
+	name = "Deathmatch: Rounds",
 	author = "trog_",
-	description = "sets round score n shit",
-	version = "0.9.0",
+	description = "Tracks kills per team using round scores",
+	version = "1.0",
 	url = ""
 };
 
@@ -29,7 +29,7 @@ public void OnPluginStart() {
 	}
 
 	g_fraglimit = CreateConVar("dm_rounds_fraglimit", "0", "Score a team has to get to win", FCVAR_NOTIFY);
-	g_fraglimit.AddChangeHook(OnScorelimitChanged);
+	g_fraglimit.AddChangeHook(OnFraglimitChanged);
 	g_maxrounds = FindConVar("mp_maxrounds");
 	g_teammatesAreEnemies = FindConVar("mp_teammates_are_enemies");
 	g_winPanelDisplayTime = FindConVar("mp_win_panel_display_time");
@@ -61,7 +61,7 @@ void UnhookEvents() {
 	UnhookEvent("round_start", OnRoundStart);
 }
 
-public void OnScorelimitChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
+public void OnFraglimitChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
 	// Make sure mp_maxrounds doesn't end the game early
 	if (g_fraglimit.IntValue * 2 < g_maxrounds.IntValue) {
 		g_maxrounds.SetInt(g_fraglimit.IntValue * 2);

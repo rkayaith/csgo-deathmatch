@@ -25,3 +25,9 @@ Implemented Commands:
 
 NOT Implemented (yet):  
 `cash_player_bomb_defused` `cash_player_bomb_planted` `cash_player_damage_hostage` `cash_player_interact_with_hostage` `cash_player_killed_hostage` `cash_player_rescued_hostage`
+
+### dm_rounds
+Tracks the kills per team using the round scores. Reaching `dm_rounds_fraglimit` ends the round and resets scores. Set to `0` for no limit.
+
+Commands:
+`dm_rounds_fraglimit`
