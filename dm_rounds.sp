@@ -6,6 +6,8 @@ EngineVersion g_Game;
 ConVar g_Enabled;
 
 ConVar g_scorelimit;
+
+ConVar g_maxrounds;
 ConVar g_teammatesAreEnemies;
 ConVar g_winPanelDisplayTime;
 
@@ -27,6 +29,8 @@ public void OnPluginStart() {
 	}
 
 	g_scorelimit = CreateConVar("dm_rounds_scorelimit", "0", "Score a team has to get to win", FCVAR_NOTIFY);
+	g_scorelimit.AddChangeHook(OnScorelimitChanged);
+	g_maxrounds = FindConVar("mp_maxrounds");
 	g_teammatesAreEnemies = FindConVar("mp_teammates_are_enemies");
 	g_winPanelDisplayTime = FindConVar("mp_win_panel_display_time");
 
@@ -55,6 +59,13 @@ void HookEvents() {
 void UnhookEvents() {
 	UnhookEvent("player_death", OnPlayerDeath);
 	UnhookEvent("round_start", OnRoundStart);
+}
+
+public void OnScorelimitChanged(ConVar convar, const char[] oldValue, const char[] newValue) {
+	// Make sure mp_maxrounds doesn't end the game early
+	if (g_scorelimit.IntValue * 2 < g_maxrounds.IntValue) {
+		g_maxrounds.SetInt(g_scorelimit.IntValue * 2);
+	}
 }
 
 public void OnPlayerDeath(Event event, const char[] name, bool dontBroadcast) {
