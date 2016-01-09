@@ -7,7 +7,7 @@ The plugins are completely independent and can be used separately.
 
 ## How to use:
 Install SourceMod then take any of the compiled plugins from `/compiled/` and put it in your server's `/sourcemod/plugins/` folder.  
-Use `dm_enabled [0/1]` to turn on/off all of the plugins.
+Use `dm_enable [0/1]` to turn on/off all of the plugins.
 
 ## Plugins:
 

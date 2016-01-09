@@ -13,7 +13,7 @@ public Plugin myinfo = {
 };
 
 EngineVersion g_Game;
-ConVar g_Cvar_Enabled;
+ConVar g_Cvar_Enable;
 
 ConVar g_Cvar_HealthFactor;
 ConVar g_Cvar_HealthFactorHeadshot;
@@ -29,7 +29,7 @@ public void OnPluginStart() {
 		SetFailState("This plugin is for CS:GO only. It may need tweaking for other games");
 	}
 
-	g_Cvar_Enabled 					= CreateConVar("dm_enabled", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_Cvar_Enable 					= CreateConVar("dm_enable", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_Cvar_HealthFactor 			= CreateConVar("dm_health_kill", "0.5", "Health to give on kill (as a factor of max health)", FCVAR_NOTIFY, true, 0.0);
 	g_Cvar_HealthFactorHeadshot		= CreateConVar("dm_health_kill_headshot", "1", "Health to give on headshot kill (as a factor of max health)", FCVAR_NOTIFY, true, 0.0);
 	g_Cvar_AmmoFactor 				= CreateConVar("dm_ammo_kill", "0.5", "Ammo to give on kill (as a factor of max clip size)", FCVAR_NOTIFY, true, 0.0);
@@ -37,9 +37,9 @@ public void OnPluginStart() {
 
 	g_MaxClipTable = new StringMap();
 
-	g_Cvar_Enabled.AddChangeHook(ConVarChange_Enabled);
+	g_Cvar_Enable.AddChangeHook(ConVarChange_Enable);
 
-	EnableHooks(g_Cvar_Enabled.BoolValue);
+	EnableHooks(g_Cvar_Enable.BoolValue);
 }
 
 void EnableHooks(bool enable) {
@@ -54,8 +54,8 @@ void EnableHooks(bool enable) {
 	}
 }
 
-public void ConVarChange_Enabled(ConVar convar, const char[] oldValue, const char[] newValue) {
-	EnableHooks(g_Cvar_Enabled.BoolValue);
+public void ConVarChange_Enable(ConVar convar, const char[] oldValue, const char[] newValue) {
+	EnableHooks(g_Cvar_Enable.BoolValue);
 }
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast) {

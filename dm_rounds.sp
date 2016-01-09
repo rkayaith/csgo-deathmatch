@@ -13,7 +13,7 @@ public Plugin myinfo = {
 };
 
 EngineVersion g_Game;
-ConVar g_Cvar_Enabled;
+ConVar g_Cvar_Enable;
 
 ConVar g_Cvar_Fraglimit;
 ConVar g_Cvar_Maxrounds;
@@ -29,16 +29,16 @@ public void OnPluginStart() {
 		SetFailState("This plugin is for CS:GO only. It may need tweaking for other games");
 	}
 
-	g_Cvar_Enabled 				= CreateConVar("dm_enabled", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_Cvar_Enable 				= CreateConVar("dm_enable", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_Cvar_Fraglimit 			= CreateConVar("dm_rounds_fraglimit", "0", "Score a team has to get to win", FCVAR_NOTIFY);
 	g_Cvar_Maxrounds 			= FindConVar("mp_maxrounds");
 	g_Cvar_TeammatesAreEnemies 	= FindConVar("mp_teammates_are_enemies");
 	g_Cvar_WinPanelDisplayTime 	= FindConVar("mp_win_panel_display_time");
 
-	g_Cvar_Enabled.AddChangeHook(ConVarChange_Enabled);
+	g_Cvar_Enable.AddChangeHook(ConVarChange_Enable);
 	g_Cvar_Fraglimit.AddChangeHook(ConVarChange_Fraglimit);
 
-	EnableHooks(g_Cvar_Enabled.BoolValue);
+	EnableHooks(g_Cvar_Enable.BoolValue);
 }
 
 void EnableHooks(bool enable) {
@@ -55,8 +55,8 @@ void EnableHooks(bool enable) {
 	}
 }
 
-public void ConVarChange_Enabled(ConVar convar, const char[] oldValue, const char[] newValue) {
-	EnableHooks(g_Cvar_Enabled.BoolValue);
+public void ConVarChange_Enable(ConVar convar, const char[] oldValue, const char[] newValue) {
+	EnableHooks(g_Cvar_Enable.BoolValue);
 }
 
 public void ConVarChange_Fraglimit(ConVar convar, const char[] oldValue, const char[] newValue) {

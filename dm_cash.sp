@@ -13,7 +13,7 @@ public Plugin myinfo = {
 };
 
 EngineVersion g_Game;
-ConVar g_Cvar_Enabled;
+ConVar g_Cvar_Enable;
 
 ConVar g_Cvar_CashAwardsEnabled;
 ConVar g_Cvar_TeammatesAreEnemies;
@@ -32,7 +32,7 @@ public void OnPluginStart() {
 		SetFailState("This plugin is for CS:GO only. It may need tweaking for other games");
 	}
 
-	g_Cvar_Enabled 				= CreateConVar("dm_enabled", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_Cvar_Enable 				= CreateConVar("dm_enable", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 	g_Cvar_CashAwardsEnabled	= FindConVar("mp_playercashawards");
 	g_Cvar_TeammatesAreEnemies 	= FindConVar("mp_teammates_are_enemies");
 	g_Cvar_Maxmoney 			= FindConVar("mp_maxmoney");
@@ -43,7 +43,7 @@ public void OnPluginStart() {
 	g_Cvar_CashGetKilled 		= FindConVar("cash_player_get_killed");
 	g_Cvar_CashRespawn 			= FindConVar("cash_player_respawn_amount");
 
-	g_Cvar_Enabled.AddChangeHook(ConVarChange_Enabled);
+	g_Cvar_Enable.AddChangeHook(ConVarChange_Enable);
 	g_Cvar_CashAwardsEnabled.AddChangeHook(ConVarChange_CashAwards);
 
 	// Set mp_playercashawards to 0 so the game isn't also trying to give money for the same actions
@@ -53,7 +53,7 @@ public void OnPluginStart() {
 		PrintToChatAll("[SM] mp_playercashawards forced to 0 by dm_cash plugin.");
 	}
 
-	EnableHooks(g_Cvar_Enabled.BoolValue);
+	EnableHooks(g_Cvar_Enable.BoolValue);
 }
 
 void EnableHooks(bool enable) {
@@ -70,8 +70,8 @@ void EnableHooks(bool enable) {
 	}
 }
 
-public void ConVarChange_Enabled(ConVar convar, const char[] oldValue, const char[] newValue) {
-	EnableHooks(g_Cvar_Enabled.BoolValue);
+public void ConVarChange_Enable(ConVar convar, const char[] oldValue, const char[] newValue) {
+	EnableHooks(g_Cvar_Enable.BoolValue);
 }
 
 public void ConVarChange_CashAwards(ConVar convar, const char[] oldValue, const char[] newValue) {
