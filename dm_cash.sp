@@ -4,6 +4,14 @@
 
 #pragma semicolon 1
 
+public Plugin myinfo = {
+	name = "Deathmatch: Cash",
+	author = "trog_",
+	description = "Implements some of the cash_player_* commands without all the printing to chat",
+	version = "1.1.1",
+	url = ""
+};
+
 EngineVersion g_Game;
 ConVar g_Cvar_Enabled;
 
@@ -16,15 +24,6 @@ ConVar g_Cvar_CashKillEnemyFactor;
 ConVar g_Cvar_CashKillTeammate;
 ConVar g_Cvar_CashGetKilled;
 ConVar g_Cvar_CashRespawn;
-
-
-public Plugin myinfo = {
-	name = "Deathmatch: Cash",
-	author = "trog_",
-	description = "Implements some of the cash_player_* commands without all the printing to chat",
-	version = "1.1",
-	url = ""
-};
 
 public void OnPluginStart() {
 
@@ -54,29 +53,25 @@ public void OnPluginStart() {
 		PrintToChatAll("[SM] mp_playercashawards forced to 0 by dm_cash plugin.");
 	}
 
-	if (g_Cvar_Enabled.BoolValue) {
-		HookEvents();
-	}
+	EnableHooks(g_Cvar_Enabled.BoolValue);
 }
 
-void HookEvents() {
-	HookEvent("player_death", Event_PlayerDeath);
-	HookEvent("player_spawn", Event_PlayerSpawn);
-}
-void UnhookEvents() {
-	UnhookEvent("player_death", Event_PlayerDeath);
-	UnhookEvent("player_spawn", Event_PlayerSpawn);
+void EnableHooks(bool enable) {
+	static bool events_hooked = false;
+	if (enable != events_hooked) {
+		if (enable) {
+			HookEvent("player_death", Event_PlayerDeath);
+			HookEvent("player_spawn", Event_PlayerSpawn);
+		} else {
+			UnhookEvent("player_death", Event_PlayerDeath);
+			UnhookEvent("player_spawn", Event_PlayerSpawn);
+		}
+		events_hooked = enable;
+	}
 }
 
 public void ConVarChange_Enabled(ConVar convar, const char[] oldValue, const char[] newValue) {
-	if (StringToInt(newValue) != StringToInt(oldValue)) {
-		if (g_Cvar_Enabled.BoolValue) {
-			HookEvents();
-		}
-		else {
-			UnhookEvents();
-		}
-	}
+	EnableHooks(g_Cvar_Enabled.BoolValue);
 }
 
 public void ConVarChange_CashAwards(ConVar convar, const char[] oldValue, const char[] newValue) {

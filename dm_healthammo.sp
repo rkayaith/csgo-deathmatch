@@ -4,6 +4,14 @@
 
 #pragma semicolon 1
 
+public Plugin myinfo = {
+	name = "Deathmatch: Health/Ammo",
+	author = "trog_",
+	description = "Give health / ammo on kill as a factor of max values",
+	version = "1.1.1",
+	url = ""
+};
+
 EngineVersion g_Game;
 ConVar g_Cvar_Enabled;
 
@@ -13,14 +21,6 @@ ConVar g_Cvar_AmmoFactor;
 ConVar g_Cvar_AmmoFactorHeadshot;
 
 StringMap g_MaxClipTable;
-
-public Plugin myinfo = {
-	name = "Deathmatch: Health/Ammo",
-	author = "trog_",
-	description = "Give health / ammo on kill as a factor of max values",
-	version = "1.1",
-	url = ""
-};
 
 public void OnPluginStart() {
 
@@ -39,27 +39,23 @@ public void OnPluginStart() {
 
 	g_Cvar_Enabled.AddChangeHook(ConVarChange_Enabled);
 
-	if (g_Cvar_Enabled.BoolValue) {
-		HookEvents();
-	}
+	EnableHooks(g_Cvar_Enabled.BoolValue);
 }
 
-void HookEvents() {
-	HookEvent("player_death", Event_PlayerDeath);
-}
-void UnhookEvents() {
-	UnhookEvent("player_death", Event_PlayerDeath);
+void EnableHooks(bool enable) {
+	static bool events_hooked = false;
+	if (enable != events_hooked) {
+		if (enable) {
+			HookEvent("player_death", Event_PlayerDeath);
+		} else {
+			UnhookEvent("player_death", Event_PlayerDeath);
+		}
+		events_hooked = enable;
+	}
 }
 
 public void ConVarChange_Enabled(ConVar convar, const char[] oldValue, const char[] newValue) {
-	if (StringToInt(newValue) != StringToInt(oldValue)) {
-		if (g_Cvar_Enabled.BoolValue) {
-			HookEvents();
-		}
-		else {
-			UnhookEvents();
-		}
-	}
+	EnableHooks(g_Cvar_Enabled.BoolValue);
 }
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast) {
