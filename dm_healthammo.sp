@@ -67,13 +67,13 @@ public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast
 
 	// Pack up event data and handle the rest after a small delay
 	DataPack eventData;
-	CreateDataTimer(0.1, OnPlayerDeathDelayed, eventData);
+	CreateDataTimer(0.1, Timer_PlayerDeath, eventData);
 	eventData.WriteCell(attacker);
 	eventData.WriteCell(isHeadshot);
 	eventData.WriteCell(healthGiven);
 }
 
-public Action OnPlayerDeathDelayed(Handle timer, DataPack eventData) {
+public Action Timer_PlayerDeath(Handle timer, DataPack eventData) {
 
 	eventData.Reset();
 	int attacker = eventData.ReadCell();

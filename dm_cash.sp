@@ -15,7 +15,7 @@ public Plugin myinfo = {
 EngineVersion g_Game;
 ConVar g_Cvar_Enable;
 
-ConVar g_Cvar_CashAwardsEnabled;
+ConVar g_Cvar_PlayerCashAwards;
 ConVar g_Cvar_TeammatesAreEnemies;
 ConVar g_Cvar_Maxmoney;
 
@@ -33,7 +33,7 @@ public void OnPluginStart() {
 	}
 
 	g_Cvar_Enable 				= CreateConVar("dm_enable", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_Cvar_CashAwardsEnabled	= FindConVar("mp_playercashawards");
+	g_Cvar_PlayerCashAwards		= FindConVar("mp_playercashawards");
 	g_Cvar_TeammatesAreEnemies 	= FindConVar("mp_teammates_are_enemies");
 	g_Cvar_Maxmoney 			= FindConVar("mp_maxmoney");
 
@@ -44,11 +44,11 @@ public void OnPluginStart() {
 	g_Cvar_CashRespawn 			= FindConVar("cash_player_respawn_amount");
 
 	g_Cvar_Enable.AddChangeHook(ConVarChange_Enable);
-	g_Cvar_CashAwardsEnabled.AddChangeHook(ConVarChange_CashAwards);
+	g_Cvar_PlayerCashAwards.AddChangeHook(ConVarChange_PlayerCashAwards);
 
 	// Set mp_playercashawards to 0 so the game isn't also trying to give money for the same actions
-	if (g_Cvar_CashAwardsEnabled.IntValue != 0) {
-		g_Cvar_CashAwardsEnabled.SetInt(0);
+	if (g_Cvar_PlayerCashAwards.IntValue != 0) {
+		g_Cvar_PlayerCashAwards.SetInt(0);
 
 		PrintToChatAll("[SM] mp_playercashawards forced to 0 by dm_cash plugin.");
 	}
@@ -74,7 +74,7 @@ public void ConVarChange_Enable(ConVar convar, const char[] oldValue, const char
 	EnableHooks(g_Cvar_Enable.BoolValue);
 }
 
-public void ConVarChange_CashAwards(ConVar convar, const char[] oldValue, const char[] newValue) {
+public void ConVarChange_PlayerCashAwards(ConVar convar, const char[] oldValue, const char[] newValue) {
 	// Notify if mp_playercashawards is changed
 	if (StringToInt(newValue) != 0) {
 		PrintToChatAll("[SM] mp_playercashawards should be 0 for the dm_cash plugin to work properly.");
