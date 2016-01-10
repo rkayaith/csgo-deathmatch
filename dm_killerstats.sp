@@ -6,9 +6,9 @@
 
 public Plugin myinfo =
 {
-	name = "Rahoo's Idea",
+	name = "Deathmatch: Killer Stats",
 	author = "kyle",
-	description = "Shows killer's health upon player death",
+	description = "Shows killer's stats on player death",
 	version = "0.9.5",
 	url = ""
 };
@@ -31,7 +31,6 @@ public void OnPluginStart() {
 
 void EnableHooks(bool enable) {
 	static bool events_hooked = false;
-	PrintToChatAll("enable?");
 	if (enable != events_hooked) {
 		if (enable) {
 			HookEvent("player_death", Event_PlayerDeath, EventHookMode_Pre);
