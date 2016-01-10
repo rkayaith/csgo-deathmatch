@@ -8,7 +8,7 @@ public Plugin myinfo = {
 	name = "Deathmatch: Rounds",
 	author = "trog_",
 	description = "Tracks kills per team using round scores",
-	version = "1.0.2",
+	version = "1.0.3",
 	url = ""
 };
 
@@ -37,7 +37,9 @@ public void OnPluginStart() {
 
 	g_Cvar_Enable.AddChangeHook(ConVarChange_Enable);
 	g_Cvar_Fraglimit.AddChangeHook(ConVarChange_Fraglimit);
+	g_Cvar_Maxrounds.AddChangeHook(ConVarChange_Maxrounds);
 
+	CheckMaxroundsValue();
 	EnableHooks(g_Cvar_Enable.BoolValue);
 }
 
@@ -60,9 +62,18 @@ public void ConVarChange_Enable(ConVar convar, const char[] oldValue, const char
 }
 
 public void ConVarChange_Fraglimit(ConVar convar, const char[] oldValue, const char[] newValue) {
+	CheckMaxroundsValue();
+}
+
+public void ConVarChange_Maxrounds(ConVar convar, const char[] oldValue, const char[] newValue) {
+	CheckMaxroundsValue();
+}
+
+void CheckMaxroundsValue() {
 	// Make sure mp_maxrounds doesn't end the game early
 	if (g_Cvar_Fraglimit.IntValue * 2 > g_Cvar_Maxrounds.IntValue) {
 		g_Cvar_Maxrounds.SetInt(g_Cvar_Fraglimit.IntValue * 2, true, true);
+		PrintToChatAll("mp_maxrounds changed by dm_rounds plugin");
 	}
 }
 
