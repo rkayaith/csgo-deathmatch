@@ -8,7 +8,7 @@ public Plugin myinfo = {
 	name = "Deathmatch: Rounds",
 	author = "trog_",
 	description = "Tracks kills per team using round scores",
-	version = "1.0.1",
+	version = "1.0.2",
 	url = ""
 };
 
@@ -61,8 +61,8 @@ public void ConVarChange_Enable(ConVar convar, const char[] oldValue, const char
 
 public void ConVarChange_Fraglimit(ConVar convar, const char[] oldValue, const char[] newValue) {
 	// Make sure mp_maxrounds doesn't end the game early
-	if (g_Cvar_Fraglimit.IntValue * 2 < g_Cvar_Maxrounds.IntValue) {
-		g_Cvar_Maxrounds.SetInt(g_Cvar_Fraglimit.IntValue * 2);
+	if (g_Cvar_Fraglimit.IntValue * 2 > g_Cvar_Maxrounds.IntValue) {
+		g_Cvar_Maxrounds.SetInt(g_Cvar_Fraglimit.IntValue * 2, true, true);
 	}
 }
 
