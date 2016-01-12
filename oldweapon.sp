@@ -12,40 +12,27 @@ public Plugin myinfo = {
 	url = ""
 };
 
+int serverWeaponsPrimary[MAXPLAYERS];
+int serverWeaponsSecondary[MAXPLAYERS];
+int player;
 
 public void OnPluginStart () {
-	HookEvent("playerhurt", Event_PlayerHurt);
+	HookEvent("player_hurt", Event_PlayerHurt);
+	HookEvent("player_spawned", Event_PlayerSpawned);
 }
 
 public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast) {
-	int player = GetClientOfUserId(event.GetInt("userid"));
+	player = GetClientOfUserId(event.GetInt("userid"));
 	int playerHealth = GetEntProp(player, Prop_Data, "m_iHealth");
-	int primaryAlive = getWeaponOne(player);
-	int secondaryAlive = getWeaponTwo(player);
-
-	if (playerHealth <= 0) {
-		DataPack eventData;
-		CreateDataTimer(5.0, loadWeapon, eventData);
-		eventData.WriteCell(player);
-		eventData.WriteCell(primaryAlive);
-		eventData.WriteCell(secondaryAlive);
-	}
+	serverWeaponsPrimary[player-1] = getWeaponOne(player);
+	serverWeaponsSecondary[player-1] = getWeaponTwo(player);
 }
 
-public Action loadWeapon(Handle timer, DataPack eventData){
-	eventData.Reset();
-	int player = eventData.ReadCell();
-	int primaryAlive = eventData.ReadCell();
-	int secondaryAlive = eventData.ReadCell();
-
-	int primaryDead = getWeaponOne(player);
-	int secondaryDead = getWeaponTwo(player);
-	if (primaryAlive != primaryDead || secondaryAlive != secondaryDead){
-		EquipPlayerWeapon(player, primaryAlive);
-		EquipPlayerWeapon(player, secondaryAlive);
-		PrintToChat (player, "hello");
-	}
+public void Event_PlayerSpawned(Event event, const char[] name, bool dontBroadcast) {
+	EquipPlayerWeapon(player, serverWeaponsPrimary[player-1]);
+	EquipPlayerWeapon(player, serverWeaponsPrimary[player-1]);
 }
+
 
 int getWeaponOne(int client) {
 	return GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
