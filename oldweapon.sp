@@ -8,13 +8,12 @@ public Plugin myinfo = {
 	name = "Keep Weapon",
 	author = "Kyle",
 	description = "Spawn with the same weapons you had before death",
-	version = "1.0",
+	version = "0.0.1",
 	url = ""
 };
 
-int serverWeaponsPrimary[MAXPLAYERS];
-int serverWeaponsSecondary[MAXPLAYERS];
-int player;
+int g_PrimaryWeapons[MAXPLAYERS + 1];
+int g_SecondaryWeapons[MAXPLAYERS + 1];
 
 public void OnPluginStart () {
 	HookEvent("player_hurt", Event_PlayerHurt);
@@ -22,21 +21,31 @@ public void OnPluginStart () {
 }
 
 public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast) {
-	player = GetClientOfUserId(event.GetInt("userid"));
-	int playerHealth = GetEntProp(player, Prop_Data, "m_iHealth");
-	serverWeaponsPrimary[player-1] = getWeaponOne(player);
-	serverWeaponsSecondary[player-1] = getWeaponTwo(player);
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	int clientHealth = GetEntProp(client, Prop_Data, "m_iHealth");
+	g_PrimaryWeapons[client] = GetWeaponOne(client);
+	g_SecondaryWeapons[client] = GetWeaponTwo(client);
+	PrintToChatAll("client: %i health:%i wep1:%i wep2:%i", client, clientHealth, GetWeaponOne(client), GetWeaponTwo(client));
 }
 
 public void Event_PlayerSpawned(Event event, const char[] name, bool dontBroadcast) {
-	EquipPlayerWeapon(player, serverWeaponsPrimary[player-1]);
-	EquipPlayerWeapon(player, serverWeaponsPrimary[player-1]);
+	int client = GetClientOfUserId(event.GetInt("userid"));
+	if (IsValidEntity(g_PrimaryWeapons[client])) {
+		EquipPlayerWeapon(client, g_PrimaryWeapons[client]);
+	} else {
+		PrintToChatAll("weapon not valid");
+	}
+	if (IsValidEntity(g_SecondaryWeapons[client])) {
+		EquipPlayerWeapon(client, g_SecondaryWeapons[client]);
+	} else {
+		PrintToChatAll("weapon not valid");
+	}
 }
 
 
-int getWeaponOne(int client) {
+int GetWeaponOne(int client) {
 	return GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
 }
-int getWeaponTwo(int client) {
+int GetWeaponTwo(int client) {
 	return GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
 }
