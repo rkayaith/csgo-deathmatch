@@ -25,24 +25,22 @@ public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast)
 
 	if (clientHealth <= 0){
 		for(int i = 0; i < 2; i++){
-			if (GetPlayerWeaponSlot(client,i) != -1){
-				GetEntityClassname(GetPlayerWeaponSlot(client, i), g_WeaponNames[client][i], sizeof(g_WeaponNames[][]));
+			int weaponSlotId = GetPlayerWeaponSlot(client,i);
+			if (weaponSlotId != -1){
+				GetEntityClassname(weaponSlotId, g_WeaponNames[client][i], sizeof(g_WeaponNames[][]));
+			}else {
+				g_WeaponNames[client][i] = "none";
 			}
 		}
 	}
 }
 
-
 public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast) {
 	int client = GetClientOfUserId(event.GetInt("userid"));
-
-	if (StrContains (g_WeaponNames[client][0], "weapon_") > -1) {
-		RemovePlayerItem(client, GetPlayerWeaponSlot(client, 0));
-		GivePlayerItem(client, g_WeaponNames[client][0]);
-	}
-
-	if (StrContains (g_WeaponNames[client][1], "weapon_") > -1) {
-		RemovePlayerItem(client, GetPlayerWeaponSlot(client, 1));
-		GivePlayerItem(client, g_WeaponNames[client][1]);
+	for(int i = 0; i < 2; i++){
+		if (StrContains (g_WeaponNames[client][i], "weapon_") > -1) {
+			RemovePlayerItem(client, GetPlayerWeaponSlot(client, i));
+			GivePlayerItem(client, g_WeaponNames[client][i]);
+		}
 	}
 }
