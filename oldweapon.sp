@@ -4,8 +4,7 @@
 
 #pragma semicolon 1
 
-#define TheNumberRahulGaveMe 2
-char g_WeaponNames[MAXPLAYERS + 1][2][32];
+#define RAHULBASEDGOD 2
 
 public Plugin myinfo = {
 	name = "Keep Weapon",
@@ -20,12 +19,14 @@ public void OnPluginStart () {
 	HookEvent("player_spawn", Event_PlayerSpawn);
 }
 
+char g_WeaponNames[MAXPLAYERS + 1][2][32];
+
 public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast) {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	int clientHealth = GetEntProp(client, Prop_Data, "m_iHealth");
 	int weaponSlotId;
 	if (clientHealth <= 0){
-		for(int i = 0; i < TheNumberRahulGaveMe; i++){
+		for(int i = 0; i < RAHULBASEDGOD; i++){
 			weaponSlotId = GetPlayerWeaponSlot(client,i);
 			if (weaponSlotId != -1){
 				GetEntityClassname(weaponSlotId, g_WeaponNames[client][i], sizeof(g_WeaponNames[][]));
