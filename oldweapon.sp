@@ -22,15 +22,13 @@ public void OnPluginStart () {
 public void Event_PlayerHurt(Event event, const char[] name, bool dontBroadcast) {
 	int client = GetClientOfUserId(event.GetInt("userid"));
 	int clientHealth = GetEntProp(client, Prop_Data, "m_iHealth");
-	char weaponOneName[32];
-	char weaponTwoName[32];
 
-	GetEntityClassname(getWeaponOne(client), weaponOneName, sizeof(weaponOneName));
-	GetEntityClassname(getWeaponTwo(client), weaponTwoName, sizeof(weaponTwoName));
-
-	if (clientHealth > 0){
-		g_WeaponNames[client][0] = weaponOneName;
-		g_WeaponNames[client][1] = weaponTwoName;
+	if (clientHealth <= 0){
+		for(int i = 0; i < 2; i++){
+			if (GetPlayerWeaponSlot(client,i) != -1){
+				GetEntityClassname(GetPlayerWeaponSlot(client, i), g_WeaponNames[client][i], sizeof(g_WeaponNames[][]));
+			}
+		}
 	}
 }
 
@@ -39,19 +37,12 @@ public void Event_PlayerSpawn(Event event, const char[] name, bool dontBroadcast
 	int client = GetClientOfUserId(event.GetInt("userid"));
 
 	if (StrContains (g_WeaponNames[client][0], "weapon_") > -1) {
-		RemovePlayerItem(client, getWeaponOne(client));
+		RemovePlayerItem(client, GetPlayerWeaponSlot(client, 0));
 		GivePlayerItem(client, g_WeaponNames[client][0]);
 	}
 
 	if (StrContains (g_WeaponNames[client][1], "weapon_") > -1) {
-		RemovePlayerItem(client, getWeaponTwo(client));
+		RemovePlayerItem(client, GetPlayerWeaponSlot(client, 1));
 		GivePlayerItem(client, g_WeaponNames[client][1]);
 	}
-}
-
-int getWeaponOne(int client) {
-	return GetPlayerWeaponSlot(client, CS_SLOT_PRIMARY);
-}
-int getWeaponTwo(int client) {
-	return GetPlayerWeaponSlot(client, CS_SLOT_SECONDARY);
 }
