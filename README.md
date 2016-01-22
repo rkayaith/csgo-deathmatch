@@ -31,3 +31,9 @@ Tracks the kills per team using the round scores. Reaching `dm_rounds_fraglimit`
 
 Commands:  
 `dm_rounds_fraglimit`
+
+### dm_oldweapon
+Respawns players with the guns they had equipped before death. No commands.
+
+## dm_killerstats
+Prints info about the player that killed you, like name and health. No commands.
