@@ -8,7 +8,7 @@
 #define MAX_WPN_LENGTH 	32	// Max weapon classname length
 
 public Plugin myinfo = {
-	name = "Keep Weapon",
+	name = "Deathmatch: Old Weapon",
 	author = "Kyle",
 	description = "Spawn with the same weapons you had before death",
 	version = "1.0.3",
