@@ -24,6 +24,7 @@ ConVar g_Cvar_LoadoutLimit;
 ConVar g_Cvar_BuyLimit;
 
 int g_BuyCount[MAXPLAYERS + 1];
+bool g_DefaultPriceFlag[MAXPLAYERS + 1];
 
 
 public void OnPluginStart() {
@@ -85,6 +86,28 @@ public Action CS_OnBuyCommand(client, const char[] weapon) {
 
 	g_BuyCount[client]++;
 	return Plugin_Continue;
+}
+
+public Action CS_OnGetWeaponPrice(int client, const char[] weapon, int &price) {
+	// Stop infinite loops. Find a better way to do this.
+	if (g_DefaultPriceFlag[client]) {
+		g_DefaultPriceFlag[client] = false;
+		return Plugin_Continue;
+	}
+	g_DefaultPriceFlag[client] = true;
+
+	// Get default price of weapon
+	char wpn[64];
+	strcopy(wpn, sizeof(wpn), weapon);
+	ReplaceString(wpn, sizeof(wpn), "weapon_", "");
+	int defPrice = CS_GetWeaponPrice(client, CS_AliasToWeaponID(wpn), true);
+
+	// TODO: Use player's current money instead of 4750
+	if (defPrice <= 4750) {
+		price = 0;
+	}
+
+	return Plugin_Handled;
 }
 
 public void Event_PlayerDeath(Event event, const char[] name, bool dontBroadcast) {
