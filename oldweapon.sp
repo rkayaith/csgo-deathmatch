@@ -11,16 +11,45 @@ public Plugin myinfo = {
 	name = "Keep Weapon",
 	author = "Kyle",
 	description = "Spawn with the same weapons you had before death",
-	version = "1.0.2",
+	version = "1.0.3",
 	url = ""
 };
+
+EngineVersion g_Game;
+ConVar g_Cvar_Enable;
 
 // Array to hold weapons for all players
 char g_PlayerWeapons[MAXPLAYERS + 1][WEAPON_SLOTS][MAX_WPN_LENGTH];
 
 public void OnPluginStart() {
-	HookEvent("player_hurt", Event_PlayerHurt);
-	HookEvent("player_spawn", Event_PlayerSpawn);
+
+	g_Game = GetEngineVersion();
+	if (g_Game != Engine_CSGO) {
+		SetFailState("This plugin is for CS:GO only. It may need tweaking for other games");
+	}
+
+	g_Cvar_Enable = CreateConVar("dm_enable", "1", "Enable the dm_ SourceMod plugins", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_Cvar_Enable.AddChangeHook(ConVarChange_Enable);
+
+	EnableHooks(g_Cvar_Enable.BoolValue);
+}
+
+void EnableHooks(bool enable) {
+	static bool events_hooked = false;
+	if (enable != events_hooked) {
+		if (enable) {
+			HookEvent("player_hurt", Event_PlayerHurt);
+			HookEvent("player_spawn", Event_PlayerSpawn);
+		} else {
+			UnhookEvent("player_hurt", Event_PlayerHurt);
+			UnhookEvent("player_spawn", Event_PlayerSpawn);
+		}
+		events_hooked = enable;
+	}
+}
+
+public void ConVarChange_Enable(ConVar convar, const char[] oldValue, const char[] newValue) {
+	EnableHooks(g_Cvar_Enable.BoolValue);
 }
 
 public bool OnClientConnect(int client) {
